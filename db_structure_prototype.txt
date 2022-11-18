@@ -1,0 +1,37 @@
+// course_members
+{
+    id,
+    name,
+    location,
+    signed_up_course_offers: [{course_offer_id, open_fees}],
+}
+
+// courses 
+{
+    id,
+    title,
+    required_courses: [],
+    literature: [
+        {
+            stock,
+            demand,
+            price,
+        }
+    ]
+}
+
+// course_offers
+{
+    id,
+    course_id,
+    start_date,
+    location,
+}
+
+// profs
+{
+    id,
+    name,
+    salary,
+    offers: [course_offer_id]
+}
