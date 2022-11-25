@@ -1,0 +1,93 @@
+{
+  "employees": [
+    {
+      "id": "27183",
+      "name": "Meier, I.",
+      "salery": 4300.5,
+      "offerIds": []
+    },
+    {
+      "id": "29594",
+      "name": "Schulze, H.",
+      "salery": 3890.2,
+      "offerIds": []
+    },
+    {
+      "id": "38197",
+      "name": "Huber, L.",
+      "salery": "4200.10",
+      "offerIds": []
+    },
+    {
+      "id": "43325",
+      "name": "Mueller, K.",
+      "salery": "3400.80",
+      "offerIds": []
+    }
+  ],
+  "offer": [
+    {
+      "id": "1",
+      "courseId": "G08",
+      "attendeeIds": ["145"],
+      "city": "Wendel",
+      "date": "13.10.2023"
+    },
+    {
+      "id": "2",
+      "courseId": "G08",
+      "attendeeIds": ["143"],
+      "city": "Ulm",
+      "date": "24.11.2023"
+    },
+    {
+      "id": "1",
+      "courseId": "G10",
+      "attendeeIds": [],
+      "city": "Augsburg",
+      "date": "01.12.2023"
+    },
+    {
+      "id": "2",
+      "courseId": "G10",
+      "attendeeIds": [],
+      "city": "München",
+      "date": "15.02.2023"
+    },
+    {
+      "id": "1",
+      "courseId": "P13",
+      "attendeeIds": ["146", "194"],
+      "city": "Augsburg",
+      "date": "28.05.2023"
+    },
+    {
+      "id": "2",
+      "courseId": "P13",
+      "attendeeIds": ["143", "149", "177"],
+      "city": "Augsburg",
+      "date": "01.07.2023"
+    },
+    {
+      "id": "1",
+      "courseId": "I09",
+      "attendeeIds": ["146", "155", "171", "173", "185"],
+      "city": "Mindelheim",
+      "date": "27.03.2023"
+    },
+    {
+      "id": "2",
+      "courseId": "I09",
+      "attendeeIds": ["187"],
+      "city": "Muenchen",
+      "date": "27.03.2023"
+    },
+    {
+      "id": "3",
+      "courseId": "I09",
+      "attendeeIds": [],
+      "city": "Ulm",
+      "date": "29.05.2023"
+    }
+  ]
+}
