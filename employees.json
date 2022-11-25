@@ -15,13 +15,13 @@
     {
       "id": "38197",
       "name": "Huber, L.",
-      "salery": "4200.10",
+      "salery": 4200.1,
       "offerIds": ["1-G08", "2-G08"]
     },
     {
       "id": "43325",
       "name": "Mueller, K.",
-      "salery": "3400.80",
+      "salery": 3400.8,
       "offerIds": ["1-G10"]
     }
   ],
