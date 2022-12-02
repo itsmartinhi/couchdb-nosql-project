@@ -1,0 +1,262 @@
+{
+  "courses": [
+    {
+      "_id": "G08",
+      "name": "Grundlagen I",
+      "preconditions": ["P13", "I09"],
+      "literatur": {
+        "amount": 4,
+        "amountNeeded": 2,
+        "price": 10.5
+      }
+    },
+    {
+      "_id": "G10",
+      "name": "Grundlagen II",
+      "preconditions": ["P13", "I09"],
+      "literatur": null
+    },
+    {
+      "_id": "P13",
+      "name": "C-Programmierung",
+      "preconditions": ["I09"],
+      "literatur": {
+        "amount": 3,
+        "amountNeeded": 5,
+        "price": 15.2
+      }
+    },
+    {
+      "_id": "I09",
+      "name": "Datenbanken",
+      "preconditions": [],
+      "literatur": {
+        "amount": 2,
+        "amountNeeded": 6,
+        "price": 8.0
+      }
+    }
+  ],
+  "attendees": [
+    {
+      "_id": "143",
+      "name": "Schmidt, M.",
+      "city": "Wedel",
+      "fees": [
+        {
+          "offerId": "2-G08",
+          "amount": 500
+        },
+        {
+          "offerId": "2-P13",
+          "amount": 400
+        }
+      ]
+    },
+    {
+      "_id": "145",
+      "name": "Huber, Chr.",
+      "city": "Augsburg",
+      "fees": [
+        {
+          "offerId": "1-G08",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "_id": "146",
+      "name": "Abele, I.",
+      "city": "Ulm",
+      "fees": [
+        {
+          "offerId": "1-P13",
+          "amount": 300
+        },
+        {
+          "offerId": "1-I09",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "_id": "149",
+      "name": "Kircher, B.",
+      "city": "Augsburg",
+      "fees": [
+        {
+          "offerId": "2-P13",
+          "amount": 350
+        }
+      ]
+    },
+    {
+      "_id": "155",
+      "name": "Meier, W.",
+      "city": "Muenchen",
+      "fees": [
+        {
+          "offerId": "1-I09",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "_id": "171",
+      "name": "Moeller, H.",
+      "city": "Neusaess",
+      "fees": [
+        {
+          "offerId": "1-I09",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "_id": "173",
+      "name": "Schulze, B.",
+      "city": "Krumbach",
+      "fees": [
+        {
+          "offerId": "1-I09",
+          "amount": 400
+        }
+      ]
+    },
+    {
+      "_id": "177",
+      "name": "Mons, F.",
+      "city": "Donauwoerth",
+      "fees": [
+        {
+          "offerId": "2-P13",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "_id": "185",
+      "name": "Meier, K.",
+      "city": "Landsberg",
+      "fees": [
+        {
+          "offerId": "1-I09",
+          "amount": 450
+        }
+      ]
+    },
+    {
+      "_id": "187",
+      "name": "Karstens, L.",
+      "city": "Augsburg",
+      "fees": [
+        {
+          "offerId": "2-I09",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "_id": "194",
+      "name": "Gerstner, M.",
+      "city": "Mindelheim",
+      "fees": [
+        {
+          "offerId": "1-P13",
+          "amount": 0
+        }
+      ]
+    }
+  ],
+  "employees": [
+    {
+      "_id": "27183",
+      "name": "Meier, I.",
+      "salery": 4300.5,
+      "offerIds": ["1-P13", "2-P13"]
+    },
+    {
+      "_id": "29594",
+      "name": "Schulze, H.",
+      "salery": 3890.2,
+      "offerIds": ["1-I09", "2-I09", "3-I09", "2-G10"]
+    },
+    {
+      "_id": "38197",
+      "name": "Huber, L.",
+      "salery": 4200.1,
+      "offerIds": ["1-G08", "2-G08"]
+    },
+    {
+      "_id": "43325",
+      "name": "Mueller, K.",
+      "salery": 3400.8,
+      "offerIds": ["1-G10"]
+    }
+  ],
+  "offers": [
+    {
+      "_id": "1-G08",
+      "courseId": "G08",
+      "attendeeIds": ["145"],
+      "city": "Wendel",
+      "date": "13.10.2023"
+    },
+    {
+      "_id": "2-G08",
+      "courseId": "G08",
+      "attendeeIds": ["143"],
+      "city": "Ulm",
+      "date": "24.11.2023"
+    },
+    {
+      "_id": "1-G10",
+      "courseId": "G10",
+      "attendeeIds": [],
+      "city": "Augsburg",
+      "date": "01.12.2023"
+    },
+    {
+      "_id": "2-G10",
+      "courseId": "G10",
+      "attendeeIds": [],
+      "city": "München",
+      "date": "15.02.2023"
+    },
+    {
+      "_id": "1-P13",
+      "courseId": "P13",
+      "attendeeIds": ["146", "194"],
+      "city": "Augsburg",
+      "date": "28.05.2023"
+    },
+    {
+      "_id": "2-P13",
+      "courseId": "P13",
+      "attendeeIds": ["143", "149", "177"],
+      "city": "Augsburg",
+      "date": "01.07.2023"
+    },
+    {
+      "_id": "1-I09",
+      "courseId": "I09",
+      "attendeeIds": ["146", "155", "171", "173", "185"],
+      "city": "Mindelheim",
+      "date": "27.03.2023"
+    },
+    {
+      "_id": "2-I09",
+      "courseId": "I09",
+      "attendeeIds": ["187"],
+      "city": "Muenchen",
+      "date": "27.03.2023"
+    },
+    {
+      "_id": "3-I09",
+      "courseId": "I09",
+      "attendeeIds": [],
+      "city": "Ulm",
+      "date": "29.05.2023"
+    }
+  ]
+}
