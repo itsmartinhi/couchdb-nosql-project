@@ -25,7 +25,7 @@
       "offerIds": ["1-G10"]
     }
   ],
-  "offer": [
+  "offers": [
     {
       "id": "1-G08",
       "courseId": "G08",

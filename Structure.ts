@@ -3,7 +3,7 @@ interface Course {
   title: string;
   // Array of Course Ids
   preconditions: string[];
-  literatur: Literatur | null;
+  literature: Literature | null;
 }
 
 interface Attendee {
@@ -19,18 +19,6 @@ interface Employee {
   salery: number;
   offerId: string[];
 }
-
-interface Fee {
-  offerId: string;
-  amount: number;
-}
-
-interface Literatur {
-  price: number;
-  amount: number;
-  amountNeeded: number;
-}
-
 interface Offer {
   id: string;
   couseId: string;
@@ -38,3 +26,16 @@ interface Offer {
   city: string;
   date: string;
 }
+
+interface Fee {
+  offerId: string;
+  amount: number;
+}
+
+interface Literature {
+  price: number;
+  amount: number;
+  amountNeeded: number;
+}
+
+
