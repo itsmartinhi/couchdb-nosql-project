@@ -1,0 +1,10 @@
+{
+    "name": "couchdb-nosql-project",
+    "version": "0.0.0",
+    "module": "src/main.mjs",
+    "scripts": {},
+    "license": "MIT",
+    "dependencies": {
+        "node-fetch": "^3.3.0"
+    }
+}
