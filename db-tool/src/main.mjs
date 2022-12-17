@@ -47,9 +47,11 @@ function getHTTPBasicHeaderValue() {
 }
 
 async function selectDataFromCouchBase() {
-  getAttendeesFromAugsburg(); // B)
-  getEmployeesWithSaleryBetween3kAnd4k(); // C)
-  getCoursesWithNoAttendees(); // H)
+  // getAttendeesFromAugsburg(); // B)
+  // getEmployeesWithSaleryBetween3kAnd4k(); // C)
+  // getCoursesWithNoAttendees(); // H)
+  // getCourseTitlesWithCountOfOffers(); // K)
+  getEmployeesWithTheSameCourse(); // H)
 }
 
 export function getAuthHeaders() {
@@ -253,4 +255,115 @@ async function getCoursesWithNoAttendees() {
     }));
     console.log("Offers and the Course Title with no Attendees", result);
   }
+}
+
+async function getCourseTitlesWithCountOfOffers() {
+  const body = JSON.stringify({
+    selector: { courseId: { $exists: true } },
+    execution_stats: true,
+    fields: ["_id", "courseId"],
+  });
+  const response = await fetch(`${URL}/offers/_find`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
+  const body2 = JSON.stringify({
+    selector: { name: { $exists: true } },
+    execution_stats: true,
+    fields: ["_id", "name"],
+  });
+  const response2 = await fetch(`${URL}/courses/_find`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: body2,
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.error(error);
+    throw new Error(`failed to select from database`);
+  }
+  if (!response2.ok) {
+    const error = await response.json();
+    console.error(error);
+    throw new Error(`failed to select from database`);
+  }
+  const offers = (await response.json()).docs;
+  const courses = (await response2.json()).docs;
+  const result = courses.map((course) => ({
+    name: course.name,
+    count: offers.filter((offer) => offer.courseId === course._id).length,
+  }));
+  console.log(result);
+}
+
+async function getEmployeesWithTheSameCourse() {
+  const body = JSON.stringify({
+    selector: { courseId: { $exists: true } },
+    execution_stats: true,
+    fields: ["_id", "courseId"],
+  });
+  const response = await fetch(`${URL}/offers/_find`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.error(error);
+    throw new Error(`failed to select from database`);
+  }
+  const body2 = JSON.stringify({
+    selector: { name: { $exists: true } },
+    execution_stats: true,
+    fields: ["name", "offerIds"],
+  });
+  const response2 = await fetch(`${URL}/employees/_find`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: body2,
+  });
+  if (!response2.ok) {
+    const error = await response.json();
+    console.error(error);
+    throw new Error(`failed to select from database`);
+  }
+  const offers = (await response.json()).docs;
+  const employees = (await response2.json()).docs;
+  const employeesWithCourseIds = employees.map((employee) => ({
+    ...employee,
+    courseIds: employee.offerIds.map(
+      (id) => offers.find((offer) => offer._id === id).courseId
+    ),
+  }));
+  const pairs = {};
+  employeesWithCourseIds.map((employee) => {
+    employee.courseIds.forEach((id) => {
+      employeesWithCourseIds.forEach((employee) => {
+        if (!!employee.courseIds.find((idToCompare) => idToCompare === id)) {
+          pairs[id] = !!pairs[id]
+            ? pairs[id].add(employee.name)
+            : new Set([employee.name]);
+        }
+      });
+    });
+  });
+  Object.keys(pairs).forEach((key) => {
+    if (pairs[key].size < 2) {
+      delete pairs[key];
+    }
+  });
+  console.log(pairs);
 }
