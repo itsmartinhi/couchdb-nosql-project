@@ -47,10 +47,14 @@ function getHTTPBasicHeaderValue() {
 
 async function runTask(task) {
     const tasksMap = {
+        a: selectA,
         b: getAttendeesFromAugsburg,
         c: getEmployeesWithSaleryBetween3kAnd4k,
+        g: selectG,
         h: getCoursesWithNoAttendees,
+        i: selectI,
         k: getCourseTitlesWithCountOfOffers,
+        l: selectL,
         n: getEmployeesWithTheSameCourse,
     }
 
@@ -58,7 +62,7 @@ async function runTask(task) {
 
     if (fn === undefined) {
         console.error(`unknown task: "${task || "-empty-"}"`)
-        console.error(`allowed tasks: ${Object.keys(tasksMap).join(",")}`)
+        console.error(`available tasks: ${Object.keys(tasksMap).join(",")}`)
         return
     }
 
@@ -370,4 +374,128 @@ async function getEmployeesWithTheSameCourse() {
         }
     })
     console.log(pairs)
+}
+
+async function _find(db, query) {
+    const response = await fetch(`${URL}/${db}/_find`, {
+        method: "POST",
+        headers: {
+            ...getAuthHeaders(),
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(query),
+    })
+    if (!response.ok) {
+        const error = await response.json()
+
+        console.error(error)
+        throw new Error("failed to execute query")
+    }
+
+    return response.json()
+}
+
+async function selectA() {
+    const res = await _find("offers", {
+        selector: {},
+        fields: ["city"],
+    })
+
+    const cities = Array.from(new Set(res.docs.map(doc => doc.city)))
+
+    _printTask("a", "alle Orte, an denen Kurse durchgeführt werden")
+    const results = cities.map(city => ({
+        city,
+    }))
+    console.table(results)
+}
+
+async function selectG() {
+    const attendeesRes = await _find("attendees", {
+        selector: {},
+        fields: ["city", "name"],
+    })
+
+    const attendees = []
+    for (const attendee of attendeesRes.docs) {
+        const offersRes = await _find("offers", {
+            selector: {
+                city: attendee.city,
+            },
+            limit: 1,
+        })
+
+        if (offersRes.docs.length > 0) {
+            attendees.push(attendee)
+        }
+    }
+
+    _printTask("g", "alle Teilnehmer, die einen Kurs am eigenen Wohnort gebucht haben")
+    const results = attendees.map(attendee => ({
+        name: attendee.name,
+        city: attendee.city,
+    }))
+    console.table(results)
+}
+
+async function selectI() {
+    const offersRes = await _find("offers", {
+        selector: {},
+        fields: ["courseId", "attendeeIds"],
+    })
+
+    const offers = []
+    for (const offer of offersRes.docs) {
+        if (offer.attendeeIds.length >= 2) {
+            offers.push(offer)
+        }
+    }
+
+    const courseIds = Array.from(new Set(offers.map(offer => offer.courseId)))
+
+    const coursesRes = await _find("courses", {
+        selector: {
+            _id: {
+                $in: courseIds,
+            },
+        },
+        fields: ["title"],
+    })
+
+    _printTask("i", "alle Kurse (egal welches Angebot) mit mindestens 2 Teilnehmern")
+    const results = coursesRes.docs.map(course => ({
+        title: course.title,
+    }))
+    console.table(results)
+}
+
+async function selectL() {
+    const coursesRes = await _find("courses", {
+        selector: {},
+        fields: ["title", "preconditions"],
+    })
+
+    const courses = coursesRes.docs
+        .filter(doc => {
+            return doc.preconditions.length >= 2
+        })
+        .sort((a, b) => {
+            return b.preconditions.length - a.preconditions.length
+        })
+
+    _printTask(
+        "l",
+        "die Kurstitel mit der Anzahl der Voraussetzungen, die mindestens 2 Voraussetzungen haben. Die Ausgabe soll so erfolgen, dass die Kurse mit den meisten Voraussetzungen zuerst kommen",
+    )
+    const results = courses.map(course => ({
+        title: course.title,
+        preconditionsCount: course.preconditions.length,
+    }))
+    console.table(results)
+}
+
+function _printTask(task, description) {
+    console.log("-".repeat(50))
+    console.log(`${task}) ${description}`)
+    console.log("-".repeat(50))
 }
