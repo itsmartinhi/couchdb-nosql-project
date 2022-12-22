@@ -54,11 +54,15 @@ const SELECT_TASKS_MAP = {
     a: selectA,
     b: getAttendeesFromAugsburg,
     c: getEmployeesWithSaleryBetween3kAnd4k,
+    d: selectD,
+    e: selectE,
     g: selectG,
     h: getCoursesWithNoAttendees,
     i: selectI,
+    j: selectJ,
     k: getCourseTitlesWithCountOfOffers,
     l: selectL,
+    m: selectM,
     n: getEmployeesWithTheSameCourse,
 }
 
@@ -76,6 +80,7 @@ async function runSelect(task) {
 
 const UPDATE_TASKS_MAP = {
     a: updateA,
+    b: updateB,
 }
 
 async function runUpdate(task) {
@@ -91,6 +96,7 @@ async function runUpdate(task) {
 }
 
 const DELETE_TASKS_MAP = {
+    a: deleteA,
     b: deleteB,
 }
 
@@ -438,6 +444,109 @@ async function _find(db, query) {
     return response.json()
 }
 
+async function selectD() {
+    // fetch all available offers
+    const offersRes = await _find("offers", {
+        selector: {},
+        fields: ["courseId", "city", "date"],
+    })
+
+    // get the unique course ids
+    const courseIds = Array.from(new Set(offersRes.docs.map(doc => doc.courseId)))
+
+    // fetch all available courses matching the courseIds
+    const coursesRes = await _find("courses", {
+        selector: {
+            _id: {
+                $in: courseIds,
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    const offerData = offersRes.docs
+
+    // create a course name map
+    const courseNameMap = {}
+    coursesRes.docs.forEach(({ _id, name }) => {
+        courseNameMap[_id] = name
+    })
+
+    // create the results by combining the data
+    const results = offerData.map(({ courseId, city, date }) => ({
+        name: courseNameMap[courseId],
+        city,
+        date,
+    }))
+
+    _printTask("d", "die Kurstitel mit Datum und Ort, an dem sie stattfinden")
+    console.table(results)
+}
+
+async function selectE() {
+    // fetch all available offers
+    const offersRes = await _find("offers", {
+        selector: {},
+        fields: ["_id", "courseId", "city", "date"],
+    })
+
+    // get the unique course ids
+    const courseIds = Array.from(new Set(offersRes.docs.map(doc => doc.courseId)))
+
+    // fetch all available courses matching the courseIds
+    const coursesRes = await _find("courses", {
+        selector: {
+            _id: {
+                $in: courseIds,
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    // fetch all available employees
+    const employeesRes = await _find("employees", {
+        selector: {},
+        fields: ["name", "offerIds"],
+    })
+
+    const offerData = offersRes.docs
+
+    // create a course name map
+    const courseNameMap = {}
+    coursesRes.docs.forEach(({ _id, name }) => {
+        courseNameMap[_id] = name
+    })
+
+    // create a employee name map
+    const employeeNameMap = {}
+    employeesRes.docs.forEach(({ name, offerIds }) => {
+        offerIds.forEach(id => {
+            employeeNameMap[id] = name
+        })
+    })
+
+    // create the results by combining the data
+    const results = offerData.map(({ _id, courseId, city, date }) => ({
+        name: courseNameMap[courseId],
+        city,
+        date,
+        instructor: employeeNameMap[_id]
+    }))
+
+    _printTask("e", "Anfrage d) mit zusätzlicher Ausgabe der Kursleiter")
+    console.table(results)
+}
+
+async function selectJ() {
+    _printTask("j", "alle Meier, sowohl Teilnehmer wie auch Kursleiter")
+    console.log("TODO")
+}
+
+async function selectM() {
+    _printTask("j", "für alle Kurse (Titel ausgeben) das durchschnittliche Gehalt der Kursleiter, die ein Angebot dieses Kurses durchführen (nach diesem Durchschnitt aufsteigend sortiert")
+    console.log("TODO")
+}
+
 async function selectA() {
     const res = await _find("offers", {
         selector: {},
@@ -589,6 +698,16 @@ async function updateA() {
         date: doc.date,
     }))
     console.table(after)
+}
+
+async function updateB() {
+    _printTask("b", "alle Angebote, die bisher in Wedel angeboten wurden, sollen jetzt in Augsburg stattfinden")
+    console.log("TODO")
+}
+
+async function deleteA() {
+    _printTask("a", "die Kursliteratur für den Kurs \"C-Programmierung\"")
+    console.log("TODO")
 }
 
 async function deleteB() {
