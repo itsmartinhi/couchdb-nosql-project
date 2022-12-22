@@ -25,9 +25,11 @@ async function main() {
         case "update":
             await runUpdate(subcommand)
             break
+        case "delete":
+            await runDelete(subcommand)
             break
         default:
-            printUsage()
+            _printUsage()
             break
     }
 }
@@ -88,6 +90,17 @@ async function runUpdate(task) {
 
     await fn()
 }
+
+async function runDelete(task) {
+    const tasksMap = {
+        b: deleteB,
+    }
+
+    const fn = tasksMap[task]
+
+    if (fn === undefined) {
+        console.error(`unknown delete: "${task || "-empty-"}"`)
+        console.error(`available delete: ${Object.keys(tasksMap).join(",")}`)
         return
     }
 
@@ -190,13 +203,14 @@ async function dropDatabases() {
     console.log(`✔︎ deleted ${databases.length} databases`)
 }
 
-function printUsage() {
+function _printUsage() {
     console.log(`Usage: node src/main.mjs {command}
 Commands:
     - insert: Create databases and insert data from data.json
     - drop: Delete all databases specified in data.json
     - select: Run a select task
-    - update: Run an update task`)
+    - update: Run an update task
+    - delete: Run a delete task`)
 }
 
 async function getAttendeesFromAugsburg() {
@@ -470,12 +484,9 @@ async function selectI() {
         fields: ["courseId", "attendeeIds"],
     })
 
-    const offers = []
-    for (const offer of offersRes.docs) {
-        if (offer.attendeeIds.length >= 2) {
-            offers.push(offer)
-        }
-    }
+    const offers = offersRes.docs.filter(doc => {
+        return doc.attendeeIds.length >= 2
+    })
 
     const courseIds = Array.from(new Set(offers.map(offer => offer.courseId)))
 
@@ -534,7 +545,6 @@ async function updateA() {
                     $regex: "2023",
                 },
             },
-            fields: ["_id", "_rev", "date"],
         })
     }
 
@@ -552,13 +562,15 @@ async function updateA() {
     for (const offer of offersResBefore.docs) {
         const newDate = offer.date.replace("2023", "2024")
 
-        const update = fetch(`${URL}/offers/${offer._id}?rev=${offer._rev}`, {
+        const update = fetch(`${URL}/offers/${offer._id}`, {
             method: "PUT",
             headers: {
                 ...getAuthHeaders(),
                 "Content-Type": "application/json",
+                "If-Match": offer._rev,
             },
             body: JSON.stringify({
+                ...offer,
                 date: newDate,
             }),
         })
@@ -572,6 +584,74 @@ async function updateA() {
     const after = offersResAfter.docs.map(doc => ({
         _id: doc._id,
         date: doc.date,
+    }))
+    console.table(after)
+}
+
+async function deleteB() {
+    const offersRes = await _find("offers", {
+        selector: {},
+        fields: ["courseId", "attendeeIds"],
+    })
+
+    const whitelistedOffers = offersRes.docs.filter(doc => {
+        return doc.attendeeIds.length >= 2
+    })
+    const whitelistedCourseIds = new Set(whitelistedOffers.map(doc => doc.courseId))
+
+    const blacklistedOffers = offersRes.docs.filter(doc => {
+        return doc.attendeeIds.length < 2
+    })
+
+    const deleteableCourseIds = new Set()
+    for (const offer of blacklistedOffers) {
+        if (whitelistedCourseIds.has(offer.courseId)) {
+            continue
+        }
+
+        deleteableCourseIds.add(offer.courseId)
+    }
+
+    const loadCourses = ids => {
+        return _find("courses", {
+            selector: {
+                _id: {
+                    $in: Array.from(ids),
+                },
+            },
+            fields: ["_id", "_rev", "title"],
+        })
+    }
+
+    const coursesResBefore = await loadCourses(deleteableCourseIds)
+
+    _printTask("b", "alle Kurse mit weniger als zwei Teilnehmern")
+    console.log("Courses with less than two attendees before delete:")
+    const before = coursesResBefore.docs.map(doc => ({
+        _id: doc._id,
+        title: doc.title,
+    }))
+    console.table(before)
+
+    const deletes = []
+    for (const course of coursesResBefore.docs) {
+        const deleteOp = fetch(`${URL}/courses/${course._id}`, {
+            method: "DELETE",
+            headers: {
+                ...getAuthHeaders(),
+                "If-Match": offer._rev,
+            },
+        })
+        deletes.push(deleteOp)
+    }
+
+    await Promise.all(deletes)
+
+    const coursesResAfter = await loadCourses(deleteableCourseIds)
+    console.log("Courses with less than two attendees after delete:")
+    const after = coursesResAfter.docs.map(doc => ({
+        _id: doc._id,
+        title: doc.title,
     }))
     console.table(after)
 }
