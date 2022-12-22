@@ -33,7 +33,6 @@ async function main() {
             break
     }
 }
-main()
 
 function getHTTPBasicHeaderValue() {
     const credentials = {
@@ -51,56 +50,56 @@ function getHTTPBasicHeaderValue() {
     return b64
 }
 
-async function runSelect(task) {
-    const tasksMap = {
-        a: selectA,
-        b: getAttendeesFromAugsburg,
-        c: getEmployeesWithSaleryBetween3kAnd4k,
-        g: selectG,
-        h: getCoursesWithNoAttendees,
-        i: selectI,
-        k: getCourseTitlesWithCountOfOffers,
-        l: selectL,
-        n: getEmployeesWithTheSameCourse,
-    }
+const SELECT_TASKS_MAP = {
+    a: selectA,
+    b: getAttendeesFromAugsburg,
+    c: getEmployeesWithSaleryBetween3kAnd4k,
+    g: selectG,
+    h: getCoursesWithNoAttendees,
+    i: selectI,
+    k: getCourseTitlesWithCountOfOffers,
+    l: selectL,
+    n: getEmployeesWithTheSameCourse,
+}
 
-    const fn = tasksMap[task]
+async function runSelect(task) {
+    const fn = SELECT_TASKS_MAP[task]
 
     if (fn === undefined) {
         console.error(`unknown select: "${task || "-empty-"}"`)
-        console.error(`available selects: ${Object.keys(tasksMap).join(",")}`)
+        console.error(`available selects: ${_formatTasksList(SELECT_TASKS_MAP)}`)
         return
     }
 
     await fn()
+}
+
+const UPDATE_TASKS_MAP = {
+    a: updateA,
 }
 
 async function runUpdate(task) {
-    const tasksMap = {
-        a: updateA,
-    }
-
-    const fn = tasksMap[task]
+    const fn = UPDATE_TASKS_MAP[task]
 
     if (fn === undefined) {
         console.error(`unknown update: "${task || "-empty-"}"`)
-        console.error(`available updates: ${Object.keys(tasksMap).join(",")}`)
+        console.error(`available updates: ${_formatTasksList(UPDATE_TASKS_MAP)}`)
         return
     }
 
     await fn()
 }
 
-async function runDelete(task) {
-    const tasksMap = {
-        b: deleteB,
-    }
+const DELETE_TASKS_MAP = {
+    b: deleteB,
+}
 
-    const fn = tasksMap[task]
+async function runDelete(task) {
+    const fn = DELETE_TASKS_MAP[task]
 
     if (fn === undefined) {
         console.error(`unknown delete: "${task || "-empty-"}"`)
-        console.error(`available delete: ${Object.keys(tasksMap).join(",")}`)
+        console.error(`available delete: ${_formatTasksList(DELETE_TASKS_MAP)}`)
         return
     }
 
@@ -208,9 +207,13 @@ function _printUsage() {
 Commands:
     - insert: Create databases and insert data from data.json
     - drop: Delete all databases specified in data.json
-    - select: Run a select task
-    - update: Run an update task
-    - delete: Run a delete task`)
+    - select {task}: Run a select task (available: ${_formatTasksList(SELECT_TASKS_MAP)})
+    - update {task}: Run an update task (available: ${_formatTasksList(UPDATE_TASKS_MAP)})
+    - delete {task}: Run a delete task (available: ${_formatTasksList(DELETE_TASKS_MAP)})`)
+}
+
+function _formatTasksList(tasks) {
+    return Object.keys(tasks).join(", ")
 }
 
 async function getAttendeesFromAugsburg() {
@@ -655,3 +658,5 @@ async function deleteB() {
     }))
     console.table(after)
 }
+
+main()
