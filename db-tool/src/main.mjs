@@ -19,8 +19,12 @@ async function main() {
         case "drop":
             await dropDatabases()
             break
-        case "task":
-            await runTask(subcommand)
+        case "select":
+            await runSelect(subcommand)
+            break
+        case "update":
+            await runUpdate(subcommand)
+            break
             break
         default:
             printUsage()
@@ -45,7 +49,7 @@ function getHTTPBasicHeaderValue() {
     return b64
 }
 
-async function runTask(task) {
+async function runSelect(task) {
     const tasksMap = {
         a: selectA,
         b: getAttendeesFromAugsburg,
@@ -61,8 +65,29 @@ async function runTask(task) {
     const fn = tasksMap[task]
 
     if (fn === undefined) {
-        console.error(`unknown task: "${task || "-empty-"}"`)
-        console.error(`available tasks: ${Object.keys(tasksMap).join(",")}`)
+        console.error(`unknown select: "${task || "-empty-"}"`)
+        console.error(`available selects: ${Object.keys(tasksMap).join(",")}`)
+        return
+    }
+
+    await fn()
+}
+
+async function runUpdate(task) {
+    const tasksMap = {
+        a: updateA,
+    }
+
+    const fn = tasksMap[task]
+
+    if (fn === undefined) {
+        console.error(`unknown update: "${task || "-empty-"}"`)
+        console.error(`available updates: ${Object.keys(tasksMap).join(",")}`)
+        return
+    }
+
+    await fn()
+}
         return
     }
 
@@ -170,7 +195,8 @@ function printUsage() {
 Commands:
     - insert: Create databases and insert data from data.json
     - drop: Delete all databases specified in data.json
-    - task: Run a predefined task`)
+    - select: Run a select task
+    - update: Run an update task`)
 }
 
 async function getAttendeesFromAugsburg() {
@@ -498,4 +524,54 @@ function _printTask(task, description) {
     console.log("-".repeat(50))
     console.log(`${task}) ${description}`)
     console.log("-".repeat(50))
+}
+
+async function updateA() {
+    const loadOffers = () => {
+        return _find("offers", {
+            selector: {
+                date: {
+                    $regex: "2023",
+                },
+            },
+            fields: ["_id", "_rev", "date"],
+        })
+    }
+
+    const offersResBefore = await loadOffers()
+
+    _printTask("a", "alle Angebote vom Jahr 2023 auf das Jahr 2024")
+    console.log("Offers in 2023 before update:")
+    const before = offersResBefore.docs.map(doc => ({
+        _id: doc._id,
+        date: doc.date,
+    }))
+    console.table(before)
+
+    const updates = []
+    for (const offer of offersResBefore.docs) {
+        const newDate = offer.date.replace("2023", "2024")
+
+        const update = fetch(`${URL}/offers/${offer._id}?rev=${offer._rev}`, {
+            method: "PUT",
+            headers: {
+                ...getAuthHeaders(),
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                date: newDate,
+            }),
+        })
+        updates.push(update)
+    }
+
+    await Promise.all(updates)
+
+    const offersResAfter = await loadOffers()
+    console.log("Offers in 2023 after update:")
+    const after = offersResAfter.docs.map(doc => ({
+        _id: doc._id,
+        date: doc.date,
+    }))
+    console.table(after)
 }
