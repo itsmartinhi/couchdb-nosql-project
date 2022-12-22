@@ -7,5 +7,5 @@ Make sure to run `npm install` once within this directory to install required de
 ## Usage
 
 ```bash
-COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs {insert | drop}
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs {insert | drop | select | update | delete}
 ```

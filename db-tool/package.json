@@ -4,6 +4,9 @@
     "module": "src/main.mjs",
     "scripts": {},
     "license": "MIT",
+    "scripts": {
+        "start": "node src/main.mjs"
+    },
     "dependencies": {
         "node-fetch": "^3.3.0"
     }
