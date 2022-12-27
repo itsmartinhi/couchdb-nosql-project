@@ -53,7 +53,7 @@ function getHTTPBasicHeaderValue() {
 const SELECT_TASKS_MAP = {
     a: selectA,
     b: getAttendeesFromAugsburg,
-    c: getEmployeesWithSaleryBetween3kAnd4k,
+    c: getEmployeesWithSalaryBetween3kAnd4k,
     d: selectD,
     e: selectE,
     g: selectG,
@@ -250,11 +250,11 @@ async function getAttendeesFromAugsburg() {
     }
 }
 
-async function getEmployeesWithSaleryBetween3kAnd4k() {
-    const saleryBody = JSON.stringify({
-        selector: { salery: { $gt: 3000, $lt: 4000 } },
+async function getEmployeesWithSalaryBetween3kAnd4k() {
+    const salaryBody = JSON.stringify({
+        selector: { salary: { $gt: 3000, $lt: 4000 } },
         execution_stats: true,
-        fields: ["_id", "_rev", "salery", "name"],
+        fields: ["_id", "_rev", "salary", "name"],
     })
     const response = await fetch(`${URL}/employees/_find`, {
         method: "POST",
@@ -262,7 +262,7 @@ async function getEmployeesWithSaleryBetween3kAnd4k() {
             ...getAuthHeaders(),
             "Content-Type": "application/json",
         },
-        body: saleryBody,
+        body: salaryBody,
     })
     if (!response.ok) {
         const error = await response.json()
@@ -270,7 +270,7 @@ async function getEmployeesWithSaleryBetween3kAnd4k() {
         console.error(error)
         throw new Error(`failed to select from database`)
     } else {
-        response.json().then(success => console.log("salery between 3000 and 4000: ", success.docs))
+        response.json().then(success => console.log("salary between 3000 and 4000: ", success.docs))
     }
 }
 
@@ -603,7 +603,7 @@ async function selectM() {
                 $in: offerIds
             }
         },
-        fields: ["salery", "offerIds"]
+        fields: ["salary", "offerIds"]
     })
 
 
