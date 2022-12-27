@@ -629,7 +629,7 @@ async function selectA() {
 async function selectG() {
     const attendeesRes = await _find("attendees", {
         selector: {},
-        fields: ["city", "name"],
+        fields: ["_id", "city", "name"],
     })
 
     const attendees = []
@@ -637,6 +637,9 @@ async function selectG() {
         const offersRes = await _find("offers", {
             selector: {
                 city: attendee.city,
+                attendeeIds: {
+                    $in: [attendee._id],
+                },
             },
             limit: 1,
         })
