@@ -538,13 +538,77 @@ async function selectE() {
 }
 
 async function selectJ() {
+
+    // fetch all matching attendees
+    const attendeesRes = await _find("attendees", {
+        selector: {
+            name: {
+                $regex: "Meier",
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    // fetch all matching attendees
+    const employeesRes = await _find("employees", {
+        selector: {
+            name: {
+                $regex: "Meier",
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    const result = []
+    result.push(...attendeesRes.docs.map(res => {
+        return { ...res, type: "attendee" }
+    }))
+    result.push(...employeesRes.docs.map(res => {
+        return { ...res, type: "employee" }
+    }))
+
     _printTask("j", "alle Meier, sowohl Teilnehmer wie auch Kursleiter")
-    console.log("TODO")
+    console.table(result)
 }
 
 async function selectM() {
-    _printTask("j", "für alle Kurse (Titel ausgeben) das durchschnittliche Gehalt der Kursleiter, die ein Angebot dieses Kurses durchführen (nach diesem Durchschnitt aufsteigend sortiert")
-    console.log("TODO")
+    // fetch all courses with _id and name
+    const coursesRes = await _find("courses", {
+        selector: {},
+        fields: ["_id", "name"]
+    })
+
+    const courseIds = coursesRes.docs.map(res => res._id)
+
+    // fetch all offers ids matching the available course ids
+    const offersRes = await _find("offers", {
+        selector: {
+            courseId: {
+                $in: courseIds
+            }
+        },
+        fields: ["_id", "courseId"]
+    })
+
+    const offerIdMap = {}
+    offersRes.docs.forEach(({ _id, courseId }) => {
+        offerIdMap[_id] = courseIds
+    })
+    const offerIds = offersRes.docs.map(res => res._id)
+
+    // fetch all employee salaries for the each offer
+    const employeeRes = await _find("employees", {
+        selector: {
+            offerIds: {
+                $in: offerIds
+            }
+        },
+        fields: ["salery", "offerIds"]
+    })
+
+
+    _printTask("m", "für alle Kurse (Titel ausgeben) das durchschnittliche Gehalt der Kursleiter, die ein Angebot dieses Kurses durchführen (nach diesem Durchschnitt aufsteigend sortiert")
+    console.log(courseIds, offerIdMap, employeeRes.docs)
 }
 
 async function selectA() {
