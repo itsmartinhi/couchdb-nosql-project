@@ -9,7 +9,7 @@ curl -X POST -F '{
 # c. die Kursleiter mit einem Gehalt zwischen 3000 € und 4000 €, sortiert nach Namen.
 curl -X POST -F '{
     "selector": {
-          "salery": {
+          "salary": {
           "$in": [3000, 4000]
         }
     },

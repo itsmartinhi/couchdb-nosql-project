@@ -16,7 +16,7 @@ interface Attendee {
 interface Employee {
   id: string;
   name: string;
-  salery: number;
+  salary: number;
   offerId: string[];
 }
 interface Offer {

@@ -28,6 +28,9 @@ async function main() {
         case "delete":
             await runDelete(subcommand)
             break
+        case "reset":
+            await resetDatabase()
+            break
         default:
             _printUsage()
             break
@@ -53,12 +56,16 @@ function getHTTPBasicHeaderValue() {
 const SELECT_TASKS_MAP = {
     a: selectA,
     b: getAttendeesFromAugsburg,
-    c: getEmployeesWithSaleryBetween3kAnd4k,
+    c: getEmployeesWithSalaryBetween3kAnd4k,
+    d: selectD,
+    e: selectE,
     g: selectG,
     h: getCoursesWithNoAttendees,
     i: selectI,
+    j: selectJ,
     k: getCourseTitlesWithCountOfOffers,
     l: selectL,
+    m: selectM,
     n: getEmployeesWithTheSameCourse,
 }
 
@@ -76,6 +83,7 @@ async function runSelect(task) {
 
 const UPDATE_TASKS_MAP = {
     a: updateA,
+    b: updateB,
 }
 
 async function runUpdate(task) {
@@ -91,6 +99,7 @@ async function runUpdate(task) {
 }
 
 const DELETE_TASKS_MAP = {
+    a: deleteA,
     b: deleteB,
 }
 
@@ -202,11 +211,22 @@ async function dropDatabases() {
     console.log(`✔︎ deleted ${databases.length} databases`)
 }
 
+async function resetDatabase() {
+
+    console.log("Resetting the DBs by dropping them all and re-inserting the data...\n")
+
+    await dropDatabases()
+    await insertData()
+
+    console.log("\n✔︎ Done!")
+}
+
 function _printUsage() {
     console.log(`Usage: node src/main.mjs {command}
-Commands:
+    Commands:
     - insert: Create databases and insert data from data.json
     - drop: Delete all databases specified in data.json
+    - reset: Delete all databases specified in data.json and create databases and insert data from data.json
     - select {task}: Run a select task (available: ${_formatTasksList(SELECT_TASKS_MAP)})
     - update {task}: Run an update task (available: ${_formatTasksList(UPDATE_TASKS_MAP)})
     - delete {task}: Run a delete task (available: ${_formatTasksList(DELETE_TASKS_MAP)})`)
@@ -244,11 +264,11 @@ async function getAttendeesFromAugsburg() {
     }
 }
 
-async function getEmployeesWithSaleryBetween3kAnd4k() {
-    const saleryBody = JSON.stringify({
-        selector: { salery: { $gt: 3000, $lt: 4000 } },
+async function getEmployeesWithSalaryBetween3kAnd4k() {
+    const salaryBody = JSON.stringify({
+        selector: { salary: { $gt: 3000, $lt: 4000 } },
         execution_stats: true,
-        fields: ["_id", "_rev", "salery", "name"],
+        fields: ["_id", "_rev", "salary", "name"],
     })
     const response = await fetch(`${URL}/employees/_find`, {
         method: "POST",
@@ -256,7 +276,7 @@ async function getEmployeesWithSaleryBetween3kAnd4k() {
             ...getAuthHeaders(),
             "Content-Type": "application/json",
         },
-        body: saleryBody,
+        body: salaryBody,
     })
     if (!response.ok) {
         const error = await response.json()
@@ -264,7 +284,7 @@ async function getEmployeesWithSaleryBetween3kAnd4k() {
         console.error(error)
         throw new Error(`failed to select from database`)
     } else {
-        response.json().then(success => console.log("salery between 3000 and 4000: ", success.docs))
+        response.json().then(success => console.log("salary between 3000 and 4000: ", success.docs))
     }
 }
 
@@ -438,6 +458,205 @@ async function _find(db, query) {
     return response.json()
 }
 
+async function selectD() {
+    // fetch all available offers
+    const offersRes = await _find("offers", {
+        selector: {},
+        fields: ["courseId", "city", "date"],
+    })
+
+    // get the unique course ids
+    const courseIds = Array.from(new Set(offersRes.docs.map(doc => doc.courseId)))
+
+    // fetch all available courses matching the courseIds
+    const coursesRes = await _find("courses", {
+        selector: {
+            _id: {
+                $in: courseIds,
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    const offerData = offersRes.docs
+
+    // create a course name map
+    const courseNameMap = {}
+    coursesRes.docs.forEach(({ _id, name }) => {
+        courseNameMap[_id] = name
+    })
+
+    // create the results by combining the data
+    const results = offerData.map(({ courseId, city, date }) => ({
+        name: courseNameMap[courseId],
+        city,
+        date,
+    }))
+
+    _printTask("d", "die Kurstitel mit Datum und Ort, an dem sie stattfinden")
+    console.table(results)
+}
+
+async function selectE() {
+    // fetch all available offers
+    const offersRes = await _find("offers", {
+        selector: {},
+        fields: ["_id", "courseId", "city", "date"],
+    })
+
+    // get the unique course ids
+    const courseIds = Array.from(new Set(offersRes.docs.map(doc => doc.courseId)))
+
+    // fetch all available courses matching the courseIds
+    const coursesRes = await _find("courses", {
+        selector: {
+            _id: {
+                $in: courseIds,
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    // fetch all available employees
+    const employeesRes = await _find("employees", {
+        selector: {},
+        fields: ["name", "offerIds"],
+    })
+
+    const offerData = offersRes.docs
+
+    // create a course name map
+    const courseNameMap = {}
+    coursesRes.docs.forEach(({ _id, name }) => {
+        courseNameMap[_id] = name
+    })
+
+    // create a employee name map
+    const employeeNameMap = {}
+    employeesRes.docs.forEach(({ name, offerIds }) => {
+        offerIds.forEach(id => {
+            employeeNameMap[id] = name
+        })
+    })
+
+    // create the results by combining the data
+    const results = offerData.map(({ _id, courseId, city, date }) => ({
+        name: courseNameMap[courseId],
+        city,
+        date,
+        instructor: employeeNameMap[_id]
+    }))
+
+    _printTask("e", "Anfrage d) mit zusätzlicher Ausgabe der Kursleiter")
+    console.table(results)
+}
+
+async function selectJ() {
+
+    // fetch all matching attendees
+    const attendeesRes = await _find("attendees", {
+        selector: {
+            name: {
+                $regex: "Meier",
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    // fetch all matching attendees
+    const employeesRes = await _find("employees", {
+        selector: {
+            name: {
+                $regex: "Meier",
+            },
+        },
+        fields: ["_id", "name"]
+    })
+
+    const result = []
+    result.push(...attendeesRes.docs.map(res => {
+        return { ...res, type: "attendee" }
+    }))
+    result.push(...employeesRes.docs.map(res => {
+        return { ...res, type: "employee" }
+    }))
+
+    _printTask("j", "alle Meier, sowohl Teilnehmer wie auch Kursleiter")
+    console.table(result)
+}
+
+async function selectM() {
+    // fetch all courses with _id and name
+    const coursesRes = await _find("courses", {
+        selector: {},
+        fields: ["_id", "title"]
+    })
+
+    const courseData = coursesRes.docs
+    const courseIds = courseData.map(res => res._id)
+
+    // fetch all offers ids matching the available course ids
+    const offersRes = await _find("offers", {
+        selector: {
+            courseId: {
+                $in: courseIds
+            }
+        },
+        fields: ["_id", "courseId"]
+    })
+
+    const offerIdMap = {}
+    offersRes.docs.forEach(({ _id, courseId }) => {
+        offerIdMap[_id] = courseId
+    })
+    const offerIds = offersRes.docs.map(res => res._id)
+
+    // fetch all employee salaries for the each offer
+    const employeeRes = await _find("employees", {
+        selector: {
+            offerIds: {
+                $in: offerIds
+            }
+        },
+        fields: ["salary", "offerIds"]
+    })
+
+    // match salaries to courses
+    const salaryData = employeeRes.docs.map(res => {
+        const matchingCourses = new Set()
+        res.offerIds.forEach(id => matchingCourses.add(offerIdMap[id]))
+
+        return {
+            ...res,
+            matchingCourses
+        }
+    })
+
+    // combine salary and course data
+    const result = courseData.map(({ _id, title }) => {
+        const salaries = []
+
+        // aggregate matching salaries per course
+        salaryData.forEach(({ salary, matchingCourses }) => {
+            if (matchingCourses.has(_id)) {
+                salaries.push(salary)
+            }
+        })
+
+        // calculate the average salary
+        const avgSalary = salaries.reduce((a, b) => a + b) / salaries.length
+
+        return {
+            courseTitle: title,
+            courseId: _id,
+            avgSalary
+        }
+    })
+
+    _printTask("m", "für alle Kurse (Titel ausgeben) das durchschnittliche Gehalt der Kursleiter, die ein Angebot dieses Kurses durchführen (nach diesem Durchschnitt aufsteigend sortiert")
+    console.table(result)
+}
+
 async function selectA() {
     const res = await _find("offers", {
         selector: {},
@@ -555,6 +774,7 @@ async function updateA() {
     }
 
     const offersResBefore = await loadOffers()
+    const allOffersBefore = await _find("offers", { selector: {} })
 
     _printTask("a", "alle Angebote vom Jahr 2023 auf das Jahr 2024")
     console.log("Offers in 2023 before update:")
@@ -592,6 +812,115 @@ async function updateA() {
         date: doc.date,
     }))
     console.table(after)
+
+    // print all offers before and after
+    const allOffersAfter = await _find("offers", { selector: {} })
+    console.log("All offers before update:")
+    console.table(allOffersBefore.docs)
+    console.log("All offers after update:")
+    console.table(allOffersAfter.docs)
+}
+
+async function updateB() {
+    const offersRes = await _find("offers", {
+        selector: {
+            city: {
+                $regex: "Wedel"
+            }
+        },
+    })
+
+    const allOffersBefore = await _find("offers", { selector: {} })
+
+    _printTask("b", "alle Angebote, die bisher in Wedel angeboten wurden, sollen jetzt in Augsburg stattfinden")
+    console.log("offers in \"Wedel\" (before the update):")
+    console.table(offersRes.docs)
+
+    const updates = []
+    offersRes.docs.forEach(offer => {
+
+        // const newValue = offer.date.replace("Wedel", "Augsburg")
+
+        const update = fetch(`${URL}/offers/${offer._id}`, {
+            method: "PUT",
+            headers: {
+                ...getAuthHeaders(),
+                "Content-Type": "application/json",
+                "If-Match": offer._rev,
+            },
+            body: JSON.stringify({
+                ...offer,
+                city: "Augsburg",
+            }),
+        })
+        updates.push(update)
+    })
+
+    await Promise.all(updates)
+
+    const offersResAfter = await _find("offers", {
+        selector: {
+            city: {
+                $regex: "Wedel"
+            }
+        },
+    })
+
+    console.log("offers in \"Wedel\" (after the update):")
+    console.table(offersResAfter.docs)
+
+    // print all offers before and after
+    const allOffersAfter = await _find("offers", { selector: {} })
+    console.log("All offers before update:")
+    console.table(allOffersBefore.docs)
+    console.log("All offers after update:")
+    console.table(allOffersAfter.docs)
+}
+
+async function deleteA() {
+    const coursesRes = await _find("courses", {
+        selector: {
+            title: {
+                $regex: "C-Programmierung"
+            }
+        },
+    })
+
+    _printTask("a", "die Kursliteratur für den Kurs \"C-Programmierung\"")
+    console.log("courses with title \"C-Programmierung\" (before)")
+    console.table(coursesRes.docs)
+
+    // we're not deleting, we're actually updating because we're working with documents
+    const updates = []
+    coursesRes.docs.forEach(course => {
+
+        const update = fetch(`${URL}/courses/${course._id}`, {
+            method: "PUT",
+            headers: {
+                ...getAuthHeaders(),
+                "Content-Type": "application/json",
+                "If-Match": course._rev,
+            },
+            body: JSON.stringify({
+                ...course,
+                literature: null,
+            }),
+        })
+        updates.push(update)
+    })
+
+    await Promise.all(updates)
+
+    const coursesResAfter = await _find("courses", {
+        selector: {
+            title: {
+                $regex: "C-Programmierung"
+            }
+        },
+    })
+
+    console.log("courses with title \"C-Programmierung\" (after)")
+    console.table(coursesResAfter.docs)
 }
 
 async function deleteB() {
@@ -645,7 +974,7 @@ async function deleteB() {
             method: "DELETE",
             headers: {
                 ...getAuthHeaders(),
-                "If-Match": offer._rev,
+                "If-Match": course._rev,
             },
         })
         deletes.push(deleteOp)
