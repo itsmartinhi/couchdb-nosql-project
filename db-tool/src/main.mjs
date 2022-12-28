@@ -28,6 +28,9 @@ async function main() {
         case "delete":
             await runDelete(subcommand)
             break
+        case "reset":
+            await resetDatabase()
+            break
         default:
             _printUsage()
             break
@@ -208,11 +211,22 @@ async function dropDatabases() {
     console.log(`✔︎ deleted ${databases.length} databases`)
 }
 
+async function resetDatabase() {
+
+    console.log("Resetting the DBs by dropping them all and re-inserting the data...\n")
+
+    await dropDatabases()
+    await insertData()
+
+    console.log("\n✔︎ Done!")
+}
+
 function _printUsage() {
     console.log(`Usage: node src/main.mjs {command}
-Commands:
+    Commands:
     - insert: Create databases and insert data from data.json
     - drop: Delete all databases specified in data.json
+    - reset: Delete all databases specified in data.json and create databases and insert data from data.json
     - select {task}: Run a select task (available: ${_formatTasksList(SELECT_TASKS_MAP)})
     - update {task}: Run an update task (available: ${_formatTasksList(UPDATE_TASKS_MAP)})
     - delete {task}: Run a delete task (available: ${_formatTasksList(DELETE_TASKS_MAP)})`)
