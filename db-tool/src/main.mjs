@@ -800,8 +800,50 @@ async function updateA() {
 }
 
 async function updateB() {
+    const offersRes = await _find("offers", {
+        selector: {
+            city: {
+                $regex: "Wedel"
+            }
+        },
+    })
+
     _printTask("b", "alle Angebote, die bisher in Wedel angeboten wurden, sollen jetzt in Augsburg stattfinden")
-    console.log("TODO")
+    console.log("offers in \"Wedel\" (before the update):")
+    console.table(offersRes.docs)
+
+    const updates = []
+    offersRes.docs.forEach(offer => {
+
+        // const newValue = offer.date.replace("Wedel", "Augsburg")
+
+        const update = fetch(`${URL}/offers/${offer._id}`, {
+            method: "PUT",
+            headers: {
+                ...getAuthHeaders(),
+                "Content-Type": "application/json",
+                "If-Match": offer._rev,
+            },
+            body: JSON.stringify({
+                ...offer,
+                city: "Augsburg",
+            }),
+        })
+        updates.push(update)
+    })
+
+    await Promise.all(updates)
+
+    const offersResAfter = await _find("offers", {
+        selector: {
+            city: {
+                $regex: "Wedel"
+            }
+        },
+    })
+
+    console.log("offers in \"Wedel\" (after the update):")
+    console.table(offersResAfter.docs)
 }
 
 async function deleteA() {
