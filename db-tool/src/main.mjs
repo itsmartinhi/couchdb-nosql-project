@@ -774,6 +774,7 @@ async function updateA() {
     }
 
     const offersResBefore = await loadOffers()
+    const allOffersBefore = await _find("offers", { selector: {} })
 
     _printTask("a", "alle Angebote vom Jahr 2023 auf das Jahr 2024")
     console.log("Offers in 2023 before update:")
@@ -811,6 +812,13 @@ async function updateA() {
         date: doc.date,
     }))
     console.table(after)
+
+    // print all offers before and after
+    const allOffersAfter = await _find("offers", { selector: {} })
+    console.log("All offers before update:")
+    console.table(allOffersBefore.docs)
+    console.log("All offers after update:")
+    console.table(allOffersAfter.docs)
 }
 
 async function updateB() {
@@ -821,6 +829,8 @@ async function updateB() {
             }
         },
     })
+
+    const allOffersBefore = await _find("offers", { selector: {} })
 
     _printTask("b", "alle Angebote, die bisher in Wedel angeboten wurden, sollen jetzt in Augsburg stattfinden")
     console.log("offers in \"Wedel\" (before the update):")
@@ -858,6 +868,13 @@ async function updateB() {
 
     console.log("offers in \"Wedel\" (after the update):")
     console.table(offersResAfter.docs)
+
+    // print all offers before and after
+    const allOffersAfter = await _find("offers", { selector: {} })
+    console.log("All offers before update:")
+    console.table(allOffersBefore.docs)
+    console.log("All offers after update:")
+    console.table(allOffersAfter.docs)
 }
 
 async function deleteA() {
