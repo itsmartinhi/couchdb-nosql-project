@@ -575,10 +575,11 @@ async function selectM() {
     // fetch all courses with _id and name
     const coursesRes = await _find("courses", {
         selector: {},
-        fields: ["_id", "name"]
+        fields: ["_id", "title"]
     })
 
-    const courseIds = coursesRes.docs.map(res => res._id)
+    const courseData = coursesRes.docs
+    const courseIds = courseData.map(res => res._id)
 
     // fetch all offers ids matching the available course ids
     const offersRes = await _find("offers", {
@@ -592,7 +593,7 @@ async function selectM() {
 
     const offerIdMap = {}
     offersRes.docs.forEach(({ _id, courseId }) => {
-        offerIdMap[_id] = courseIds
+        offerIdMap[_id] = courseId
     })
     const offerIds = offersRes.docs.map(res => res._id)
 
@@ -606,9 +607,40 @@ async function selectM() {
         fields: ["salary", "offerIds"]
     })
 
+    // match salaries to courses
+    const salaryData = employeeRes.docs.map(res => {
+        const matchingCourses = new Set()
+        res.offerIds.forEach(id => matchingCourses.add(offerIdMap[id]))
+
+        return {
+            ...res,
+            matchingCourses
+        }
+    })
+
+    // combine salary and course data
+    const result = courseData.map(({ _id, title }) => {
+        const salaries = []
+
+        // aggregate matching salaries per course
+        salaryData.forEach(({ salary, matchingCourses }) => {
+            if (matchingCourses.has(_id)) {
+                salaries.push(salary)
+            }
+        })
+
+        // calculate the average salary
+        const avgSalary = salaries.reduce((a, b) => a + b) / salaries.length
+
+        return {
+            courseTitle: title,
+            courseId: _id,
+            avgSalary
+        }
+    })
 
     _printTask("m", "für alle Kurse (Titel ausgeben) das durchschnittliche Gehalt der Kursleiter, die ein Angebot dieses Kurses durchführen (nach diesem Durchschnitt aufsteigend sortiert")
-    console.log(courseIds, offerIdMap, employeeRes.docs)
+    console.table(result)
 }
 
 async function selectA() {
