@@ -878,8 +878,49 @@ async function updateB() {
 }
 
 async function deleteA() {
+    const coursesRes = await _find("courses", {
+        selector: {
+            title: {
+                $regex: "C-Programmierung"
+            }
+        },
+    })
+
     _printTask("a", "die Kursliteratur für den Kurs \"C-Programmierung\"")
-    console.log("TODO")
+    console.log("courses with title \"C-Programmierung\" (before)")
+    console.table(coursesRes.docs)
+
+    // we're not deleting, we're actually updating because we're working with documents
+    const updates = []
+    coursesRes.docs.forEach(course => {
+
+        const update = fetch(`${URL}/courses/${course._id}`, {
+            method: "PUT",
+            headers: {
+                ...getAuthHeaders(),
+                "Content-Type": "application/json",
+                "If-Match": course._rev,
+            },
+            body: JSON.stringify({
+                ...course,
+                literatur: null,
+            }),
+        })
+        updates.push(update)
+    })
+
+    await Promise.all(updates)
+
+    const coursesResAfter = await _find("courses", {
+        selector: {
+            title: {
+                $regex: "C-Programmierung"
+            }
+        },
+    })
+
+    console.log("courses with title \"C-Programmierung\" (after)")
+    console.table(coursesResAfter.docs)
 }
 
 async function deleteB() {
@@ -933,7 +974,7 @@ async function deleteB() {
             method: "DELETE",
             headers: {
                 ...getAuthHeaders(),
-                "If-Match": offer._rev,
+                "If-Match": course._rev,
             },
         })
         deletes.push(deleteOp)
