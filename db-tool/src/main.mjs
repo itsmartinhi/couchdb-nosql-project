@@ -903,7 +903,7 @@ async function deleteA() {
             },
             body: JSON.stringify({
                 ...course,
-                literatur: null,
+                literature: null,
             }),
         })
         updates.push(update)
