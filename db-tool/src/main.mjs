@@ -260,6 +260,7 @@ async function getEmployeesWithSaleryBetween3kAnd4k() {
     fields: ["_id", "_rev", "salery", "name"],
     sort: [{ name: "asc" }],
   });
+
   // index is needed for sorting
   const indexBody = JSON.stringify({
     index: {
