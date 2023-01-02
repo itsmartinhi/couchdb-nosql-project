@@ -61,6 +61,7 @@ const SELECT_TASKS_MAP = {
   c: getEmployeesWithSalaryBetween3kAnd4k,
   d: selectD,
   e: selectE,
+  f: selectF,
   g: selectG,
   h: getCoursesWithNoAttendees,
   i: selectI,
@@ -483,6 +484,83 @@ async function getEmployeesWithTheSameCourse() {
     "alle Paare von Kursleitern, die denselben Kurs halten, und den entsprechenden Kurstitel. Geben Sie jedes Paar nur einmal aus."
   );
   console.table(Object.keys(pairs).map((key) => Array.from(pairs[key])));
+}
+
+async function selectF() {
+  // const body = JSON.stringify({
+  //   views: {
+  //     my_filter: {
+  //       map: "function(doc) {   emit([doc.name, 0], null);  for(var i in doc.preconditions){ emit([doc.name, Number(i)+1], {_id: doc.preconditions[i]}) } }",
+  //     },
+  //   },
+  // });
+  // console.log(body);
+  // const response = await fetch(
+  //   `${URL}/courses/_design/coursesWithPreCondition`,
+  //   {
+  //     method: "PUT",
+  //     headers: {
+  //       ...getAuthHeaders(),
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: body,
+  //   }
+  // );
+  // if (!response.ok) {
+  //   const error = await response.json();
+  //   console.error(error);
+  //   throw new Error(`failed to select from database`);
+  // }
+  // console.log(response);
+
+  // const data = await fetch(
+  //   `${URL}/courses/_design/coursesWithPreCondition/_views/my_filter`,
+  //   {
+  //     method: "GET",
+  //     headers: {
+  //       ...getAuthHeaders(),
+  //       "Content-Type": "application/json",
+  //     },
+  //   }
+  // );
+  // console.log(data);
+
+  const body = JSON.stringify({
+    selector: { _id: { $exists: true } },
+    execution_stats: true,
+    fields: ["_id", "name", "preconditions"],
+  });
+  const response = await fetch(`${URL}/courses/_find`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.error(error);
+    throw new Error(`failed to select from database`);
+  }
+  const data = (await response.json()).docs;
+  const mappedData = data
+    .map((row) => {
+      const preconditionNames = row.preconditions.map(
+        (id) => data.find((obj) => obj._id === id).name
+      );
+      return {
+        Kurs: row.name,
+        Vorbedingung:
+          preconditionNames.length > 0 ? preconditionNames.join(", ") : "NULL",
+      };
+    })
+    .sort((a, b) => a.Kurs.localeCompare(b.Kurs));
+  _printTask(
+    "f",
+    "alle Kurstitel mit den Titeln der Kurse, die dafür Voraussetzung sind. Hat ein Kurs keine Voraussetzungen, so soll dieses Feld NULL sein. Achten Sie auf vernünftige Spaltenüberschriften. Die Ausgabe soll nach Kursen sortiert erfolgen."
+  );
+  console.table(mappedData);
 }
 
 async function _find(db, query) {
