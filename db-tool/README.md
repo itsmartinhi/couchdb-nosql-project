@@ -2,7 +2,8 @@
 
 ## Setup
 
-Make sure to run `npm install` once within this directory to install required dependencies (currently only `node-fetch` is used to provide a polyfill for `fetch` in Node.js)
+- Make sure to run `npm install` once within this directory to install required dependencies (currently only `node-fetch` is used to provide a polyfill for `fetch` in Node.js)
+- run the cli insert command (if this failes, the db is already inserted/initialized)
 
 ## Usage
 
