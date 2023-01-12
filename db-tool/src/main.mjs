@@ -1064,6 +1064,17 @@ async function deleteA() {
     console.table(coursesResAfter.docs);
 }
 
+const loadCourses = (ids) => {
+    return _find("courses", {
+        selector: {
+            _id: {
+                $in: Array.from(ids),
+            },
+        },
+        fields: ["_id", "_rev", "title"],
+    });
+};
+
 async function deleteB() {
     const offersRes = await _find("offers", {
         selector: {},
