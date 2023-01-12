@@ -1,0 +1,30 @@
+# the project folder is located at users root ./ and is called couchdb-nosql-project
+
+# to use the node cli, switch into the db-tool directory "cd db-tool"
+# all commands and their function are also explained in the db-tool/README.md
+
+# select commands for the node cli
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select a
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select b
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select c
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select d
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select e
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select f
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select g
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select h
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select i
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select j
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select k
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select l
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select m
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs select n
+
+# update commands for the node cli
+# use "COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs reset" to reset the DB to its original state after updating or deleting data
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs update a
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs update b
+
+# delete commands for the node cli
+# use "COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs reset" to reset the DB to its original state after updating or deleting data
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs delete a
+COUCHDB_USER=admin COUCHDB_PASSWORD=password node src/main.mjs delete b
