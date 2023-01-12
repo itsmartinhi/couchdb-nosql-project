@@ -511,7 +511,6 @@ async function selectF() {
             const preconditionNames = row.preconditions.map(
                 (id) => data.find((obj) => obj._id === id).title
             );
-            console.log(preconditionNames, row);
             return {
                 Kurs: row.title,
                 Vorbedingung:
