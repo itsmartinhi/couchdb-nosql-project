@@ -360,7 +360,7 @@ async function getCoursesWithNoAttendees() {
       .flat();
     const result = courses.map((course) => ({
       offerId: data.find((data) => data.courseId === course._id)._id,
-      courseName: course.name,
+      courseName: course.title,
     }));
     _printTask(
       "h",
@@ -385,9 +385,9 @@ async function getCourseTitlesWithCountOfOffers() {
     body: body,
   });
   const body2 = JSON.stringify({
-    selector: { name: { $exists: true } },
+    selector: { title: { $exists: true } },
     execution_stats: true,
-    fields: ["_id", "name"],
+    fields: ["_id", "title"],
   });
   const response2 = await fetch(`${URL}/courses/_find`, {
     method: "POST",
@@ -410,7 +410,7 @@ async function getCourseTitlesWithCountOfOffers() {
   const offers = (await response.json()).docs;
   const courses = (await response2.json()).docs;
   const result = courses.map((course) => ({
-    name: course.name,
+    name: course.title,
     count: offers.filter((offer) => offer.courseId === course._id).length,
   }));
   _printTask("k", "die Kurstitel mit der jeweiligen Anzahl der Angebote.");
@@ -564,15 +564,15 @@ async function selectD() {
         $in: courseIds,
       },
     },
-    fields: ["_id", "name"],
+    fields: ["_id", "title"],
   });
 
   const offerData = offersRes.docs;
 
   // create a course name map
   const courseNameMap = {};
-  coursesRes.docs.forEach(({ _id, name }) => {
-    courseNameMap[_id] = name;
+  coursesRes.docs.forEach(({ _id, title }) => {
+    courseNameMap[_id] = title;
   });
 
   // create the results by combining the data
@@ -605,7 +605,7 @@ async function selectE() {
         $in: courseIds,
       },
     },
-    fields: ["_id", "name"],
+    fields: ["_id", "title"],
   });
 
   // fetch all available employees
@@ -618,8 +618,8 @@ async function selectE() {
 
   // create a course name map
   const courseNameMap = {};
-  coursesRes.docs.forEach(({ _id, name }) => {
-    courseNameMap[_id] = name;
+  coursesRes.docs.forEach(({ _id, title }) => {
+    courseNameMap[_id] = title;
   });
 
   // create a employee name map
