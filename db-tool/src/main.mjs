@@ -487,48 +487,10 @@ async function getEmployeesWithTheSameCourse() {
 }
 
 async function selectF() {
-  // const body = JSON.stringify({
-  //   views: {
-  //     my_filter: {
-  //       map: "function(doc) {   emit([doc.name, 0], null);  for(var i in doc.preconditions){ emit([doc.name, Number(i)+1], {_id: doc.preconditions[i]}) } }",
-  //     },
-  //   },
-  // });
-  // console.log(body);
-  // const response = await fetch(
-  //   `${URL}/courses/_design/coursesWithPreCondition`,
-  //   {
-  //     method: "PUT",
-  //     headers: {
-  //       ...getAuthHeaders(),
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: body,
-  //   }
-  // );
-  // if (!response.ok) {
-  //   const error = await response.json();
-  //   console.error(error);
-  //   throw new Error(`failed to select from database`);
-  // }
-  // console.log(response);
-
-  // const data = await fetch(
-  //   `${URL}/courses/_design/coursesWithPreCondition/_views/my_filter`,
-  //   {
-  //     method: "GET",
-  //     headers: {
-  //       ...getAuthHeaders(),
-  //       "Content-Type": "application/json",
-  //     },
-  //   }
-  // );
-  // console.log(data);
-
   const body = JSON.stringify({
     selector: { _id: { $exists: true } },
     execution_stats: true,
-    fields: ["_id", "name", "preconditions"],
+    fields: ["_id", "title", "preconditions"],
   });
   const response = await fetch(`${URL}/courses/_find`, {
     method: "POST",
@@ -547,10 +509,11 @@ async function selectF() {
   const mappedData = data
     .map((row) => {
       const preconditionNames = row.preconditions.map(
-        (id) => data.find((obj) => obj._id === id).name
+        (id) => data.find((obj) => obj._id === id).title
       );
+      console.log(preconditionNames, row);
       return {
-        Kurs: row.name,
+        Kurs: row.title,
         Vorbedingung:
           preconditionNames.length > 0 ? preconditionNames.join(", ") : "NULL",
       };
